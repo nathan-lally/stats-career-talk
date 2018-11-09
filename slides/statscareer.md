@@ -35,10 +35,10 @@
 
 What Do Statisticians Actually Do In The Real World?
 ========================================================
-author: Nathan Lally: Senior Machine Learning Modeler @ HSB - Munich Re
+author: Nathan Lally: New England Statistical Society
 width: 1366
 height: 768
-date: 2018-10-29
+date: 2018-11-08
 autosize: true
 
 
@@ -49,7 +49,7 @@ So What Exactly Is Statistics?
 
 So What Exactly Is Statistics?
 ========================================================
-<div class="header">Start with the definition. Boring dude...</div>
+<div class="header">Start with the definition. How original...</div>
 
 __Statistics:__ Is a branch of applied mathematics concerned with the collection, organization, analysis, interpretation and presentation of data.
 
@@ -64,8 +64,7 @@ So What Exactly Is Statistics?
 Statistics is the tool we use to validate the results of all applied sciences including but not limited to,
 
 * Physics
-* Chemistry
-* Biology
+* Chemistry & Biology
 * Engineering
 * Computer Science
 * Medicine, Public Health & Epidemiology
@@ -90,7 +89,7 @@ So What Exactly Is Statistics?
 
 In addition, probability and statistics makeup the backbone of machine learning (ML) and artificial intelligence (AI) algorithms.
 
-Statistics is the core of the new discipline of data science. We will talk about data science later and see a demo or ML in action.
+Statistics is the core of the new discipline of data science. We will talk about data science later and see a demo of ML in action.
 
 ***
 
@@ -109,11 +108,11 @@ So What Exactly Is Statistics?
 
 * __Descriptive Statistics__
   * "Summarize data from a sample using indexes such as the mean or standard deviation"
-  * Includes numerical summaries and statistical graphics
+  * Numerical summaries and graphics
   
 * __Inferential Statistics__
   * "Draw conclusions from data that are subject to random variation"
-  * Includes hypothesis testing and other probabilistic assessments
+  * Hypothesis testing and other probabilistic assessments
 
 ***
 
@@ -125,13 +124,13 @@ So What Exactly Is Statistics?
 <div class="header2">Inferential Statistics</div>
 
 $$
-\small
+\Tiny
 \begin{align}
-  &H_0: \mu_{B1} = \mu_{B10}\\
-  &H_a: \mu_{B1} < \mu_{B10}\\ \hline
-  &\bar{X}_{B1}= 45.38, \bar{X}_{B10}= 47.39, s_p = 14.07\\
-  &n_{B1}=163125, n_{B10}=17740\\
-  &t = \frac{\bar{X}_{B1} - \bar{X}_{B10}}{s_p\sqrt{\frac{1}{n_{B1}}+ \frac{1}{n_{B10}}}} = -18.11\\
+  &H_0: \mu_{cab} = \mu_{wgn}\\
+  &H_a: \mu_{cab} < \mu_{wgn}\\ \hline
+  &\bar{X}_{cab}= 42.34, \bar{X}_{wgn}= 45.99, s_p = 12.96\\
+  &n_{cab}=1343, n_{wgn}=1629\\
+  &t = \frac{\bar{X}_{cab} - \bar{X}_{wgn}}{s_p\sqrt{\frac{1}{n_{cab}}+ \frac{1}{n_{wgn}}}} = -7.64\\
   &P(T \leq t | H_0) \approx 2.2 \cdot 10^{-16}
 \end{align}
 $$
@@ -157,19 +156,33 @@ Together, inference and prediction help enable decision making in science, gover
 
 Statistics In Action
 ========================================================
-<div class="header">Statistical Inference: An Example</div>
+<div class="header">Statistical Inference Example: Climate Change</div>
 
-Show contigency table for college admissions and hypothesis test
+<img src="statscareer-figure/unnamed-chunk-1-1.png" title="plot of chunk unnamed-chunk-1" alt="plot of chunk unnamed-chunk-1" style="display: block; margin: auto;" />
+
 
 Statistics In Action
 ========================================================
-<div class="header">Predictive Modeling: An Example</div>
+<div class="header">Predictive Modeling Example: Using Classification Trees to Predict Titanic Survivors</div>
 
-Either a
+<img src="statscareer-figure/unnamed-chunk-2-1.png" title="plot of chunk unnamed-chunk-2" alt="plot of chunk unnamed-chunk-2" style="display: block; margin: auto;" />
+
 
 Now That We Understand Statistics, What Is Data Science?
 ========================================================
 <div class="header">Data Science: A Multidisciplinary Science With Statistics At Its Core</div>
+
+
+
+* __Question:__ What do you get when you cross a statistician, computer scientist, and a software engineer?
+
+* __Answer:__ A data scientist.
+
+__Data Scientists__ are professionals who use an interdisciplinary skill-set to,
+* Obtain and manipulate data
+* Analyze data using statistics and machine learning
+* Present findings
+* Create applications
 
 
 
@@ -193,7 +206,7 @@ You have. You use them all the time. Here are some examples,
 * Netflix Scores
 * Facebook Facial Recognition
 * Uber Driver Routing
-
+* YouTube Video Recommendations
 
 ***
 
@@ -212,9 +225,9 @@ What Do I Do As A Statistician/Data Scientist?
 2. Pratt & Whitney
 3. The Hartford Steam Boiler (Munich Re)
 
-<center>
-![F-35 JSF](f35.jpg)
-<center>
+<div align="center">
+<img src="f35.jpg" width=703 height=500>
+</div>
 
 
 ***
@@ -225,10 +238,9 @@ What Do I Do As A Statistician/Data Scientist?
 2. Auto insurance customer retention & pricing
 3. Insurance reserve estimation
 4. Jet engine combustor section wear and fatigue modeling
-5. Jet engine service and part replacement forecasting
-6. F-35 Joint Strike Fighter engine vibration analysis
+5. F-35 Joint Strike Fighter engine vibration analysis
 7. Commercial equipment breakdown pricing
-8. Location risk for commercial equipment insurance
+7. Location risk for commercial equipment insurance
 
 
 
@@ -237,39 +249,52 @@ What Do I Have To Do To Be A Statistician/Data Scientist???
 ========================================================
 <div class="header">In case you thought you were done studying soon...</div>
 
+<font size="6"> 
+
 1. Complete an undergraduate degree with a strong quantitative focus
   * Statistics, Mathematics, Computer Science, Physics, Electrical Engineering, Economics (focus on econometrics)
   * These degrees can help get you an entry level role in the private or public sector
 2. Complete a graduate degree
-  * PhD or MS in Statisics or a related field with relevant coursework and research in statistics
+  * PhD or MS in Statistics or a related field with relevant coursework and research in statistics
   * This is essential if your goal is to work in academics or in a research position. It also will help you in  industry jobs if you want a to be a technical lead or decision maker.
 3. Learn to code
   * R , Python, Julia, Scala, SQL
 4. Study more math
 5. Did I say study more math? Do that some more...
 
-Why Become A Statistican or Data Scientist?
+</font> 
+
+Why Become A Statistician or Data Scientist?
 ========================================================
+left: 40%
 <div class="header">Save the world!</div>
 
-add median for everyone in the USA
+Apply your skills to solve pressing problems facing humanity. You can work in,
+
+* Cancer and other disease research
+* Climate science
+* Epidemiology
+* Transportation safety
+* National security
+* Robotics
+
+and many other fields
 
 ***
 
 <div class="header">Get paid well while you're at it!</div>
 
-* Statistician Salaries ([Median](http://www.amstat.org/ASA/Your-Career/Salary-Information.aspx))
-  * Academic
-      1. Assistant Professor: $92,004
-      2. Associate Professor: $102,142
-      3. Professor: $148,368
-  * Industry
-      1. Similar to data scientist salaries but with more variability due to diverse career options
-
-* Data Science Salaries ([Median](https://datasciencedegree.wisconsin.edu/data-science/data-scientist-salary/))
+* [Statistician Median Salaries](http://www.amstat.org/ASA/Your-Career/Salary-Information.aspx)
+  1. Assistant Professor: $92,004
+  2. Associate Professor: $102,142
+  3. Professor: $148,368
+  4. Industry (similar to data science salaries)
+* [Data Science Median Salaries](https://datasciencedegree.wisconsin.edu/data-science/data-scientist-salary/))
   1. Entry-Level: $95,000
   2. Mid-Level: $126,000
   3. Experienced: $157,000
+* [Median US Full-time Salary](https://www.bls.gov/news.release/pdf/wkyeng.pdf)
+  * $46,124
 
 
 

@@ -1,0 +1,146 @@
+---
+title: "Auto Insurance Pricing Demo"
+author: "Nathan Lally"
+date: "November 3, 2018"
+output:
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+library("knitr")
+library("tidyverse")
+library("rfCountData")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# A Short Primer on Insurance Pricing
+
+To set the price of most products or services, the formula is relatively simple.
+
+$$
+\begin{align}
+  \text{Price} &= \text{Cost} + \text{Desired Profit}
+\end{align}
+$$
+Where, __cost__ is the amount of money it costs to manufacture, deliver, market, etc. a product or service and __desired profit__ is the amount of extra money the seller decides to charge (based on supply and demand).
+
+The cost of most goods and services is fairly well known. We know how much we paid for raw materials, about how much labor will cost, and have a good grasp of other expenses we may incur. We could say that cost is mostly __deterministic__.
+
+Insurance, however, is quite different than most products or services. Before we sell you an insurance contract, we do not know how much you will ultimately will cost us. The best we can do is make an educated guess based on traits you share with our other customers (both current and historical) and other variables related to the insurance marketplace. 
+
+The price you pay for an insurance contract is called a __premium__ and can be decomposed into several pieces.
+
+$$
+\text{Premium} = \text{Pure Premium} + (\text{Fixed Expenses,Profit,Etc...})\\
+\text{where,}\\
+\text{Pure Premium} = (\text{Expected Claim Frequency})\cdot(\text{Expected Claim Cost})
+$$
+
+Where __pure premium__ is the amount of money we (the insurer) expect you to cost us in claims. Pure premium is not deterministic, instead it is a __random quantity__ that must be estimated. Insurance companies use statistical and machine learning models to estimate pure premium. It is the job of the statistician/data scientist to construct the models and tools used for this estimation.
+
+The next several sections in this document walk you through an example data analysis using auto insurance claims data from France in the year 2004.
+
+Why France in 2004? Because someone kindly made this data [publicly and freely available](http://cas.uqam.ca/). Most insurers are reluctant or unable to share their data with the public.
+
+
+# Obtain & Manipulate Data
+
+```{r}
+# use the CASdatsets package to obtain auto claims data
+library("CASdatasets", verbose = FALSE)
+
+# fetch claims and claims severity data, join them so we can model pure premium
+data(freMTPL2freq)
+df <- as_tibble(freMTPL2freq)# convert to tibble and rename
+df <- freMTPL2freq %>%
+  select(ClaimNb,Exposure,VehPower,VehAge,DrivAge,VehGas,BonusMalus)
+rm(freMTPL2freq)
+save(df, file="/home/nathan/Documents/stats-projects/stats-career-talk/tech-demo/application/autodat.RData")
+```
+
+# Data Analysis
+
+## Step 1: Exploratory Data Analysis
+
+### Numerical Summaries
+
+```{r}
+# some simple statistics
+cat("The total sample size is\n", nrow(df))
+cat("There are a total of\n", ncol(df)-2, "\npredictor varaibles available")
+cat("There are a total of\n", sum(df$laimNb), "\nobserved claims")
+m1 <- glm(data=df, formula = ClaimNb ~ 1 + log(VehPower) + offset(log(Exposure)), family = poisson(link = "log"),
+          control = list(maxit=100))
+
+# here is a quick snapshot of the data
+glimpse(df)
+
+# and some quick summaries
+summary(df)
+```
+
+
+
+### Graphics 
+```{r, fig.align="center", out.width="100%"}
+# Histograms
+hist1 <- ggplot(data=clms, aes(x=ClaimAmount/Exposure, y=..density..)) +
+  geom_histogram(bins = 100) +
+  labs(x="Loss Amount/Earned Exposure", y="Density", title="Loss Histogram")
+hist1
+hist2 <- ggplot(data=clms, aes(x=log(ClaimAmount/Exposure), y=..density..)) +
+  geom_histogram(bins = 100) +
+  labs(x="log(Loss Amount/Earned Exposure)", y="Density", title="Loss Histogram (Log Scale)")
+hist2
+# Violin & Scatter plots
+sc1 <- ggplot(data=clms, aes(x=factor(VehPower), y=log(ClaimAmount/Exposure))) +
+  geom_violin(fill="cyan") +
+  labs(x="Vehicle Power", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Vehicle Power")
+sc1
+sc2 <- ggplot(data=clms, aes(x=VehGas, y=log(ClaimAmount/Exposure))) +
+  geom_violin(fill="red") +
+  labs(x="Fuel Type", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Fuel Type")
+sc2
+sc3 <- ggplot(data=clms, aes(x=VehAge, y=log(ClaimAmount/Exposure))) +
+  geom_point(alpha=0.6, color="pink") +
+  labs(x="Vehicle Age", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Vehicle Age")
+sc3
+
+sc5 <- ggplot(data=clms, aes(x=DrivAge, y=log(ClaimAmount/Exposure))) +
+  geom_point(alpha=0.6, color="brown") +
+  labs(x="Driver Age", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Driver Age")
+sc5
+
+sc6 <- ggplot(data=clms, aes(x=(DrivAge*VehAge), y=log(ClaimAmount/Exposure))) +
+  geom_point(alpha=0.6, color="purple") +
+  labs(x="Driver Age * Vehicle Age", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Driver Age * Vehicle Age")
+sc6
+```
+
+
+
+## Step 2: Fit a Predictive Model
+
+```{r}
+# fit 
+data("freMTPLfreq")
+library(rfCountData)
+m0 = rfPoisson(y = freMTPLfreq[1:10000,]$ClaimNb,
+                  offset = log(freMTPLfreq[1:10000,]$Exposure),
+                  x = freMTPLfreq[1:10000,c("Region", "Power", "DriverAge")],
+                  ntree = 20)
+predict(m0, newdata = freMTPLfreq[10001:10050,c("Region", "Power", "DriverAge")], 
+offset = log(freMTPLfreq[10001:10050,"Exposure"]))
+
+```
+
+
+
+
+# Build an Application
+

@@ -35,7 +35,7 @@
 
 What Do Statisticians Actually Do In The Real World?
 ========================================================
-author: Nathan Lally: Senior Machine Learning Modeler @ HSB - Munich Re
+author: Nathan Lally: New England Statistical Society
 width: 1366
 height: 768
 date: `r Sys.Date()`
@@ -49,7 +49,7 @@ So What Exactly Is Statistics?
 
 So What Exactly Is Statistics?
 ========================================================
-<div class="header">Start with the definition. Boring dude...</div>
+<div class="header">Start with the definition. How original...</div>
 
 __Statistics:__ Is a branch of applied mathematics concerned with the collection, organization, analysis, interpretation and presentation of data.
 
@@ -64,8 +64,7 @@ So What Exactly Is Statistics?
 Statistics is the tool we use to validate the results of all applied sciences including but not limited to,
 
 * Physics
-* Chemistry
-* Biology
+* Chemistry & Biology
 * Engineering
 * Computer Science
 * Medicine, Public Health & Epidemiology
@@ -90,7 +89,7 @@ So What Exactly Is Statistics?
 
 In addition, probability and statistics makeup the backbone of machine learning (ML) and artificial intelligence (AI) algorithms.
 
-Statistics is the core of the new discipline of data science. We will talk about data science later and see a demo or ML in action.
+Statistics is the core of the new discipline of data science. We will talk about data science later and see a demo of ML in action.
 
 ***
 
@@ -109,11 +108,11 @@ So What Exactly Is Statistics?
 
 * __Descriptive Statistics__
   * "Summarize data from a sample using indexes such as the mean or standard deviation"
-  * Includes numerical summaries and statistical graphics
+  * Numerical summaries and graphics
   
 * __Inferential Statistics__
   * "Draw conclusions from data that are subject to random variation"
-  * Includes hypothesis testing and other probabilistic assessments
+  * Hypothesis testing and other probabilistic assessments
 
 ***
 
@@ -125,37 +124,43 @@ library("CASdatasets")
 library("tidyverse")
 
 #### load data ####
-data(freMTPL2freq)
-data(freMTPL2sev)
-freq <- as_tibble(freMTPL2freq)# convert to tibbles
-sev <- as_tibble(freMTPL2sev)# convert to tibbles
-df <- freq %>%
-  left_join(sev, by="IDpol") %>%
-  mutate(ClaimAmount = ifelse(is.na(ClaimAmount), 0, ClaimAmount))
+data(freMPL1)
+df <- as_tibble(freMPL1)
 sev <- df %>%
   filter(ClaimAmount >0)
-rm(freMTPL2freq,freMTPL2sev) 
+rm(freMPL1)
+# data(freMTPL2freq)
+# data(freMTPL2sev)
+# freq <- as_tibble(freMTPL2freq)# convert to tibbles
+# sev <- as_tibble(freMTPL2sev)# convert to tibbles
+# df <- freq %>%
+#   left_join(sev, by="IDpol") %>%
+#   mutate(ClaimAmount = ifelse(is.na(ClaimAmount), 0, ClaimAmount))
+# sev <- df %>%
+#   filter(ClaimAmount >0)
+# rm(freMTPL2freq,freMTPL2sev) 
 
 #### make a quick plot ####
-agebox <- ggplot(data = df, aes(x=VehBrand,y=DrivAge)) +
+agebox <- ggplot(data = df, aes(x=VehBody,y=DrivAge)) +
   geom_boxplot(fill="cyan", notch = TRUE) +
   scale_y_continuous(breaks=seq(15,110,5)) +
-  labs(x="Vehicle Brand", y="Driver Age") +
-  theme_minimal(base_size = 16)
+  labs(x="Vehicle Type", y="Driver Age") +
+  theme_minimal(base_size = 16) +
+  theme(axis.text.x = element_text(angle=-45, hjust=0))
 agebox
 
 #### summarize some data ####
-b1 <- df$DrivAge[df$VehBrand=="B1"]
-b10 <- df$DrivAge[df$VehBrand=="B10"]
-xbarb1 <- mean(b1)
-xbarb10 <- mean(b10)
-s2b1 <- var(b1)
-s2b10 <- var(b10)
-nb1 <- length(b1)
-nb10 <- length(b10)
-deg.fr <- nb1+nb10-2
-sp <- sqrt(((nb1-1)*s2b1 + (nb10-1)*s2b10) / deg.fr)
-t <- (xbarb1-xbarb10) / (sp*sqrt(1/nb1 +  1/nb10))
+cab <- df$DrivAge[df$VehBody=="cabriolet"]
+wgn <- df$DrivAge[df$VehBody=="station wagon"]
+xbarcab <- mean(cab)
+xbarwgn <- mean(wgn)
+s2cab <- var(cab)
+s2wgn <- var(wgn)
+ncab <- length(cab)
+nwgn <- length(wgn)
+deg.fr <- ncab+nwgn-2
+sp <- sqrt(((ncab-1)*s2cab + (nwgn-1)*s2wgn) / deg.fr)
+t <- (xbarcab-xbarwgn) / (sp*sqrt(1/ncab +  1/nwgn))
 pval <- pt(q=t, df = deg.fr, lower.tail = TRUE)
 ```
 
@@ -163,13 +168,13 @@ pval <- pt(q=t, df = deg.fr, lower.tail = TRUE)
 <div class="header2">Inferential Statistics</div>
 
 $$
-\small
+\Tiny
 \begin{align}
-  &H_0: \mu_{B1} = \mu_{B10}\\
-  &H_a: \mu_{B1} < \mu_{B10}\\ \hline
-  &\bar{X}_{B1}= `r round(xbarb1, 2)`, \bar{X}_{B10}= `r round(xbarb10, 2)`, s_p = `r round(sp, 2)`\\
-  &n_{B1}=`r nb1`, n_{B10}=`r nb10`\\
-  &t = \frac{\bar{X}_{B1} - \bar{X}_{B10}}{s_p\sqrt{\frac{1}{n_{B1}}+ \frac{1}{n_{B10}}}} = `r round(t, 2)`\\
+  &H_0: \mu_{cab} = \mu_{wgn}\\
+  &H_a: \mu_{cab} < \mu_{wgn}\\ \hline
+  &\bar{X}_{cab}= `r round(xbarcab, 2)`, \bar{X}_{wgn}= `r round(xbarwgn, 2)`, s_p = `r round(sp, 2)`\\
+  &n_{cab}=`r ncab`, n_{wgn}=`r nwgn`\\
+  &t = \frac{\bar{X}_{cab} - \bar{X}_{wgn}}{s_p\sqrt{\frac{1}{n_{cab}}+ \frac{1}{n_{wgn}}}} = `r round(t, 2)`\\
   &P(T \leq t | H_0) \approx 2.2 \cdot 10^{-16}
 \end{align}
 $$
@@ -195,19 +200,79 @@ Together, inference and prediction help enable decision making in science, gover
 
 Statistics In Action
 ========================================================
-<div class="header">Statistical Inference: An Example</div>
+<div class="header">Statistical Inference Example: Climate Change</div>
 
-Show contigency table for college admissions and hypothesis test
+```{r, echo=FALSE, fig.height=10, fig.width=20, fig.align = "center"}
+#### load packages ####
+library("changepoint")
+
+#### get data ####
+temp <- read.table("ftp://ftp.ncdc.noaa.gov/pub/data/noaaglobaltemp/operational/timeseries/aravg.ann.land.00N.30N.v4.0.1.201809.asc", header = FALSE)
+temp <- temp[,1:2]
+colnames(temp) <- c("year","anomaly")
+
+#### fit change point model ####
+cpmod <- cpt.meanvar(temp$anomaly,pen.value="BIC",method="BinSeg",Q=6,class=FALSE)
+yrs = temp$year[cpmod]
+
+#### plot ####
+tempplot <- ggplot(data=temp, aes(x=year,y=anomaly)) +
+  geom_hline(aes(yintercept=0), color="blue", size=1, linetype=2) +
+  geom_vline(aes(xintercept=yrs[1]), color="red", size=.75, linetype=1) +
+  geom_vline(aes(xintercept=yrs[2]), color="red", size=.75, linetype=1) +
+  geom_vline(aes(xintercept=yrs[3]), color="red", size=.75, linetype=1) +
+  geom_line(size=1) +
+  scale_x_continuous(breaks=seq(min(temp$year),max(temp$year), 5) ) +
+  labs(x="Year", y="Anomaly of Temperature", title = "Global Anomaly of Temperature Change Point Analysis") +
+  theme_minimal(base_size = 25) +
+  theme(axis.text.x = element_text(angle=-45, hjust=0))
+tempplot
+
+```
+
 
 Statistics In Action
 ========================================================
-<div class="header">Predictive Modeling: An Example</div>
+<div class="header">Predictive Modeling Example: Using Classification Trees to Predict Titanic Survivors</div>
 
-Either a
+```{r, echo=FALSE, fig.height=10, fig.width=20, fig.align = "center"}
+#### load packages ####
+library(partykit)
+library(titanic)
+
+#### get data ####
+data("titanic_train")
+titanic_train$Survived <- as.factor(ifelse(titanic_train$Survived == 1, "Survived", "Died"))
+titanic_train$Pclass <- as.factor(titanic_train$Pclass)
+for(i in 1:ncol(titanic_train)){
+  if(class(titanic_train[,i]) == "character"){
+    titanic_train[,i] <- as.factor(titanic_train[,i])
+  }
+}
+
+#### fit model ####
+fit <- ctree(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked,
+               data=titanic_train)
+plot(fit, tp_args = list(text = "h"), gp = gpar(fontsize = 20))
+
+```
+
 
 Now That We Understand Statistics, What Is Data Science?
 ========================================================
 <div class="header">Data Science: A Multidisciplinary Science With Statistics At Its Core</div>
+
+
+
+* __Question:__ What do you get when you cross a statistician, computer scientist, and a software engineer?
+
+* __Answer:__ A data scientist.
+
+__Data Scientists__ are professionals who use an interdisciplinary skill-set to,
+* Obtain and manipulate data
+* Analyze data using statistics and machine learning
+* Present findings
+* Create applications
 
 
 
@@ -231,7 +296,7 @@ You have. You use them all the time. Here are some examples,
 * Netflix Scores
 * Facebook Facial Recognition
 * Uber Driver Routing
-
+* YouTube Video Recommendations
 
 ***
 
@@ -250,9 +315,9 @@ What Do I Do As A Statistician/Data Scientist?
 2. Pratt & Whitney
 3. The Hartford Steam Boiler (Munich Re)
 
-<center>
-![F-35 JSF](f35.jpg)
-<center>
+<div align="center">
+<img src="f35.jpg" width=703 height=500>
+</div>
 
 
 ***
@@ -263,10 +328,9 @@ What Do I Do As A Statistician/Data Scientist?
 2. Auto insurance customer retention & pricing
 3. Insurance reserve estimation
 4. Jet engine combustor section wear and fatigue modeling
-5. Jet engine service and part replacement forecasting
-6. F-35 Joint Strike Fighter engine vibration analysis
+5. F-35 Joint Strike Fighter engine vibration analysis
 7. Commercial equipment breakdown pricing
-8. Location risk for commercial equipment insurance
+7. Location risk for commercial equipment insurance
 
 
 
@@ -275,39 +339,52 @@ What Do I Have To Do To Be A Statistician/Data Scientist???
 ========================================================
 <div class="header">In case you thought you were done studying soon...</div>
 
+<font size="6"> 
+
 1. Complete an undergraduate degree with a strong quantitative focus
   * Statistics, Mathematics, Computer Science, Physics, Electrical Engineering, Economics (focus on econometrics)
   * These degrees can help get you an entry level role in the private or public sector
 2. Complete a graduate degree
-  * PhD or MS in Statisics or a related field with relevant coursework and research in statistics
+  * PhD or MS in Statistics or a related field with relevant coursework and research in statistics
   * This is essential if your goal is to work in academics or in a research position. It also will help you in  industry jobs if you want a to be a technical lead or decision maker.
 3. Learn to code
   * R , Python, Julia, Scala, SQL
 4. Study more math
 5. Did I say study more math? Do that some more...
 
-Why Become A Statistican or Data Scientist?
+</font> 
+
+Why Become A Statistician or Data Scientist?
 ========================================================
+left: 40%
 <div class="header">Save the world!</div>
 
-add median for everyone in the USA
+Apply your skills to solve pressing problems facing humanity. You can work in,
+
+* Cancer and other disease research
+* Climate science
+* Epidemiology
+* Transportation safety
+* National security
+* Robotics
+
+and many other fields
 
 ***
 
 <div class="header">Get paid well while you're at it!</div>
 
-* Statistician Salaries ([Median](http://www.amstat.org/ASA/Your-Career/Salary-Information.aspx))
-  * Academic
-      1. Assistant Professor: $92,004
-      2. Associate Professor: $102,142
-      3. Professor: $148,368
-  * Industry
-      1. Similar to data scientist salaries but with more variability due to diverse career options
-
-* Data Science Salaries ([Median](https://datasciencedegree.wisconsin.edu/data-science/data-scientist-salary/))
+* [Statistician Median Salaries](http://www.amstat.org/ASA/Your-Career/Salary-Information.aspx)
+  1. Assistant Professor: $92,004
+  2. Associate Professor: $102,142
+  3. Professor: $148,368
+  4. Industry (similar to data science salaries)
+* [Data Science Median Salaries](https://datasciencedegree.wisconsin.edu/data-science/data-scientist-salary/))
   1. Entry-Level: $95,000
   2. Mid-Level: $126,000
   3. Experienced: $157,000
+* [Median US Full-time Salary](https://www.bls.gov/news.release/pdf/wkyeng.pdf)
+  * $46,124
 
 
 
