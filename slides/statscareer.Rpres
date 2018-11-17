@@ -35,7 +35,7 @@
 
 What Do Statisticians Actually Do In The Real World?
 ========================================================
-author: Nathan Lally: New England Statistical Society
+author: Nathan Lally: Data Scientist @ New England Statistical Society & HSB (Munich Re)
 width: 1366
 height: 768
 date: `r Sys.Date()`
@@ -330,7 +330,7 @@ What Do I Do As A Statistician/Data Scientist?
 4. Jet engine combustor section wear and fatigue modeling
 5. F-35 Joint Strike Fighter engine vibration analysis
 7. Commercial equipment breakdown pricing
-7. Location risk for commercial equipment insurance
+7. Location risk for commercial equipment breakdowninsurance
 
 
 

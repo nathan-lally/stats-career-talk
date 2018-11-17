@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-# A Short Primer on Insurance Pricing
+# A Very, Very Short Primer on Insurance Pricing
 
 To set the price of most products or services, the formula is relatively simple.
 
@@ -37,13 +37,18 @@ The price you pay for an insurance contract is called a __premium__ and can be d
 
 $$
 \text{Premium} = \text{Pure Premium} + (\text{Fixed Expenses,Profit,Etc...})\\
-\text{where,}\\
-\text{Pure Premium} = (\text{Expected Claim Frequency})\cdot(\text{Expected Claim Cost})
+\text{where}\\
+\text{Pure Premium} = (\text{Expected Claim Frequency})\cdot(\text{Expected Claim Cost})\\
 $$
 
 Where __pure premium__ is the amount of money we (the insurer) expect you to cost us in claims. Pure premium is not deterministic, instead it is a __random quantity__ that must be estimated. Insurance companies use statistical and machine learning models to estimate pure premium. It is the job of the statistician/data scientist to construct the models and tools used for this estimation.
 
-The next several sections in this document walk you through an example data analysis using auto insurance claims data from France in the year 2004.
+There are two ways to model pure premium,
+
+1. Model claim frequency and claim cost separately. The product of the two results is pure premium.
+2. Model pure premium directly (often using a compound distribution).
+
+The next several sections in this document walk you through an example data analysis of claims frequency using auto insurance claims data from France in the year 2004. We will model claim frequency as it is more interesting than claim cost which is typically a function of the value of the car and regional economics.
 
 Why France in 2004? Because someone kindly made this data [publicly and freely available](http://cas.uqam.ca/). Most insurers are reluctant or unable to share their data with the public.
 
@@ -55,12 +60,11 @@ Why France in 2004? Because someone kindly made this data [publicly and freely a
 library("CASdatasets", verbose = FALSE)
 
 # fetch claims and claims severity data, join them so we can model pure premium
-data(freMTPL2freq)
-df <- as_tibble(freMTPL2freq)# convert to tibble and rename
-df <- freMTPL2freq %>%
-  select(ClaimNb,Exposure,VehPower,VehAge,DrivAge,VehGas,BonusMalus)
-rm(freMTPL2freq)
-save(df, file="/home/nathan/Documents/stats-projects/stats-career-talk/tech-demo/application/autodat.RData")
+data(freMPL1)
+df <- as_tibble(freMPL1)
+df <- df %>%
+  select(Exposure,ClaimInd,LicAge,VehAge,Gender,VehUsage,DrivAge,VehBody,VehMaxSpeed)
+rm(freMPL1)
 ```
 
 # Data Analysis
@@ -73,74 +77,140 @@ save(df, file="/home/nathan/Documents/stats-projects/stats-career-talk/tech-demo
 # some simple statistics
 cat("The total sample size is\n", nrow(df))
 cat("There are a total of\n", ncol(df)-2, "\npredictor varaibles available")
-cat("There are a total of\n", sum(df$laimNb), "\nobserved claims")
-m1 <- glm(data=df, formula = ClaimNb ~ 1 + log(VehPower) + offset(log(Exposure)), family = poisson(link = "log"),
-          control = list(maxit=100))
+cat("There are a total of\n", sum(df$ClaimInd), "\nobserved claims")
+cat("The overall claims frequency is ", round(sum(df$ClaimInd)/sum(df$Exposure),4))
 
 # here is a quick snapshot of the data
 glimpse(df)
-
-# and some quick summaries
-summary(df)
 ```
 
 
 
-### Graphics 
+### Graphics
 ```{r, fig.align="center", out.width="100%"}
-# Histograms
-hist1 <- ggplot(data=clms, aes(x=ClaimAmount/Exposure, y=..density..)) +
-  geom_histogram(bins = 100) +
-  labs(x="Loss Amount/Earned Exposure", y="Density", title="Loss Histogram")
-hist1
-hist2 <- ggplot(data=clms, aes(x=log(ClaimAmount/Exposure), y=..density..)) +
-  geom_histogram(bins = 100) +
-  labs(x="log(Loss Amount/Earned Exposure)", y="Density", title="Loss Histogram (Log Scale)")
-hist2
-# Violin & Scatter plots
-sc1 <- ggplot(data=clms, aes(x=factor(VehPower), y=log(ClaimAmount/Exposure))) +
-  geom_violin(fill="cyan") +
-  labs(x="Vehicle Power", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Vehicle Power")
-sc1
-sc2 <- ggplot(data=clms, aes(x=VehGas, y=log(ClaimAmount/Exposure))) +
-  geom_violin(fill="red") +
-  labs(x="Fuel Type", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Fuel Type")
-sc2
-sc3 <- ggplot(data=clms, aes(x=VehAge, y=log(ClaimAmount/Exposure))) +
-  geom_point(alpha=0.6, color="pink") +
-  labs(x="Vehicle Age", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Vehicle Age")
-sc3
-
-sc5 <- ggplot(data=clms, aes(x=DrivAge, y=log(ClaimAmount/Exposure))) +
-  geom_point(alpha=0.6, color="brown") +
-  labs(x="Driver Age", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Driver Age")
-sc5
-
-sc6 <- ggplot(data=clms, aes(x=(DrivAge*VehAge), y=log(ClaimAmount/Exposure))) +
-  geom_point(alpha=0.6, color="purple") +
-  labs(x="Driver Age * Vehicle Age", y="log(Loss Amount/Earned Exposure)", title="Loss Amount vs. Driver Age * Vehicle Age")
-sc6
+# Age
+df$agebins <- cut(df$DrivAge, breaks=c(seq(18,93,5),max(df$DrivAge)))
+drvage <- df %>%
+  group_by(agebins) %>%
+  summarise(claims = sum(ClaimInd),
+            exposure = sum(Exposure)) %>%
+  mutate(freq = claims/exposure) %>%
+  na.omit()
+ageplot <- ggplot(data=drvage, aes(x=agebins, y=freq)) +
+  geom_col() +
+  labs(x="Driver Age Bin", y="Claim Frequency", title="Claim Frequency by Driver Age") +
+  theme(axis.text.x = element_text(angle=-45, hjust=0))
+ageplot
+# License Age
+df$licbins <- cut(df$LicAge, breaks=seq(0,940,24))
+licage <- df %>%
+  group_by(licbins) %>%
+  summarise(claims = sum(ClaimInd),
+            exposure = sum(Exposure)) %>%
+  mutate(freq = claims/exposure) %>%
+  na.omit()
+ageplot <- ggplot(data=licage, aes(x=licbins, y=freq)) +
+  geom_col() +
+  labs(x="License Age Bin", y="Claim Frequency", title="Claim Frequency by License Age") +
+  theme(axis.text.x = element_text(angle=-75, hjust=0))
+ageplot
+# Gender
+gen <- df %>%
+  group_by(Gender) %>%
+  summarise(claims = sum(ClaimInd),
+            exposure = sum(Exposure)) %>%
+  mutate(freq = claims/exposure) %>%
+  na.omit()
+genplot <- ggplot(data=gen, aes(x=Gender, y=freq, fill=Gender)) +
+  geom_col() +
+  labs(x="Gender", y="Claim Frequency", title="Claim Frequency by Gender") +
+  theme(axis.text.x = element_text(angle=0, hjust=0))
+genplot
+# Age and Gender
+agegen <- df %>%
+  group_by(Gender,agebins) %>%
+  summarise(claims = sum(ClaimInd),
+            exposure = sum(Exposure)) %>%
+  mutate(freq = claims/exposure) %>%
+  na.omit()
+genageplot <- ggplot(data=agegen, aes(x=agebins, y=freq, fill=Gender)) +
+  geom_col(position = 'dodge') +
+  labs(x="Driver Age Bin", y="Claim Frequency", title="Claim Frequency by Gender & Driver Age") +
+  theme(axis.text.x = element_text(angle=-45, hjust=0))
+genageplot
+# Max Speed
+spd <- df %>%
+  group_by(VehMaxSpeed) %>%
+  summarise(claims = sum(ClaimInd),
+            exposure = sum(Exposure)) %>%
+  mutate(freq = claims/exposure) %>%
+  na.omit()
+spdplot <- ggplot(data=spd, aes(x=VehMaxSpeed, y=freq)) +
+  geom_col() +
+  labs(x="Max Speed", y="Claim Frequency", title="Claim Frequency by Max Speed") +
+  theme(axis.text.x = element_text(angle=-45, hjust=0))
+spdplot
 ```
 
 
 
 ## Step 2: Fit a Predictive Model
 
-```{r}
-# fit 
-data("freMTPLfreq")
-library(rfCountData)
-m0 = rfPoisson(y = freMTPLfreq[1:10000,]$ClaimNb,
-                  offset = log(freMTPLfreq[1:10000,]$Exposure),
-                  x = freMTPLfreq[1:10000,c("Region", "Power", "DriverAge")],
-                  ntree = 20)
-predict(m0, newdata = freMTPLfreq[10001:10050,c("Region", "Power", "DriverAge")], 
-offset = log(freMTPLfreq[10001:10050,"Exposure"]))
+### Train the Model
 
+```{r}
+# set up modeling data
+df <- df %>%
+  select(-agebins,-licbins)
+y <- df$ClaimInd
+exposure <- df$Exposure
+x <- df %>%
+  select(-c(Exposure,ClaimInd)) %>%
+  as.data.frame()
+# fit
+library(rfCountData)
+tune.grid <- expand.grid(mtry=1:ncol(x), nodesize=c(500, 750, 1000, 2000, 3000, 5000), oob=NA)
+for(i in 1:nrow(tune.grid)){
+  tune.grid$oob[i] <- mean(rfPoisson(y = y,
+                 offset = log(exposure),
+                 x = x,
+                 ntree = 300)$dev)
+}
+tuned.hypers <- tune.grid[which(tune.grid$oob==min(tune.grid$oob)),]
+m0 <-  rfPoisson(y = y,
+                 offset = log(exposure),
+                 x = x,
+                 mtry = tuned.hypers$mtry,
+                 nodesize = tuned.hypers$nodesize,
+                 ntree = 300)
+
+save(list=c("df","x","m0"), file = "~/Documents/stats-projects/stats-career-talk/tech-demo/application/autodat.RData")
+```
+
+### Model Results
+
+#### Variable Importance
+```{r}
+varImpPlot(m0)
+```
+
+### Partial Dependence
+```{r}
+partialPlot(m0, x.var = "VehAge", pred.data = x, offset = exposure)
+partialPlot(m0, x.var = "VehUsage", pred.data = x, offset = exposure)
+partialPlot(m0, x.var = "LicAge", pred.data = x, offset = exposure)
+partialPlot(m0, x.var = "VehMaxSpeed", pred.data = x, offset = exposure)
+partialPlot(m0, x.var = "VehBody", pred.data = x, offset = exposure)
+partialPlot(m0, x.var = "DrivAge", pred.data = x, offset = exposure)
+partialPlot(m0, x.var = "Gender", pred.data = x, offset = exposure)
 ```
 
 
 
 
+
+
 # Build an Application
+
+We will see a simple web application which gives model predictions given any inputs.
 
