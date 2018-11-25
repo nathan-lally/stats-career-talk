@@ -3,6 +3,7 @@ library(shiny)
 library(tidyverse)
 library(rfCountData)
 load("/home/nathan/Documents/stats-projects/stats-career-talk/tech-demo/application/autodat.RData")
+overallrate <- sum(df$ClaimInd)/sum(df$Exposure)
 
 #### shiny application ####
 library(shiny)
@@ -44,7 +45,7 @@ ui <- fluidPage(
       
       # Driver Gender
       selectInput(inputId = "Gender", 
-                  label = "Vehicle Gender:",
+                  label = "Driver Gender:",
                   choices = c("Female","Male"), 
                   selected = "Male"),
       
@@ -54,7 +55,7 @@ ui <- fluidPage(
                   min = 18,
                   max = 100,
                   step = 1,
-                  value = 0,
+                  value = 18,
                   ticks = TRUE),
       
       # License Age
@@ -78,30 +79,29 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  # set up test data for predictions
+  preddat <- reactive(
+    {
+      xpred <- data.frame(LicAge = as.integer(input$LicAge),
+                          VehAge = factor(input$VehAge, levels = levels(df$VehAge)),
+                          Gender = factor(input$Gender, levels = levels(df$Gender)),
+                          VehUsage = factor(input$VehUsage, levels = levels(df$VehUsage)),
+                          DrivAge = as.integer(input$DrivAge),
+                          VehBody = factor(input$VehBody, levels = levels(df$VehBody)),
+                          VehMaxSpeed = factor(input$VehMaxSpeed, levels = levels(df$VehMaxSpeed)))
+      # model predictions
+      modpred <- predict(m0, newdata = xpred, offset = 0)
+      preddat <- data.frame(Group=c("Baseline","Prediction"), Value=c(overallrate,modpred))
+      return(preddat)
+    }
+  )
+  # make the plot
   output$plot <- renderPlot({
-    # set up test data for predictions
-    xpred <- data.frame(LicAge = as.integer(input$LicAge),
-                        VehAge = as.factor(input$VehAge),
-                        Gender = as.factor(input$Gender),
-                        VehUsage = as.factor(input$VehUsage),
-                        DrivAge = as.integer(input$DrivAge),
-                        VehBody = as.factor(input$VehBody),
-                        VehMaxSpeed = as.factor(input$VehMaxSpeed))
-    levels(xpred$VehAge) <- levels(df$VehAge)
-    levels(xpred$Gender) <- levels(df$Gender)
-    levels(xpred$VehUsage) <- levels(df$VehUsage)
-    levels(xpred$VehBody) <- levels(df$VehBody)
-    levels(xpred$VehMaxSpeed) <- levels(df$VehMaxSpeed)
-    overallrate <- sum(df$ClaimInd)/sum(df$Exposure)
-    # model predictions
-    modpred <- predict(m0, newdata = xpred, offset = 0)
-    preddat <- data.frame(Group=c("Baseline","Prediction"), Value=c(overallrate,modpred))
-    # make the plot
-    ggplot(data=preddat, aes(x=Group,y=Value)) + 
+    ggplot(data=preddat(), aes(x=Group,y=Value)) + 
       geom_col(fill="cyan", color="black") + 
       geom_hline(aes(yintercept=overallrate), color="red", linetype=2, size=1) +
       scale_y_continuous(breaks=seq(0,1,0.05), limits = c(0,1)) +
-      labs(x="Category",y="Claim Frequency", title = "Claim Frequency: Predictions vs. Reference") + 
+      labs(x="",y="Claim Frequency (Claims per Year)", title = "Claim Frequency: Predictions vs. Reference") + 
       theme_light(base_size = 20)
   })
 }
