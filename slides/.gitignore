@@ -34,3 +34,13 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+
+
+# images and other files that will appear in this presentation
+*.jpg
+*.html
+
+# specific files and folders
+statscareer.md
+/statscareer-figure
+/statscareer_files

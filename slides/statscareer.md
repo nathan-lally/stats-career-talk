@@ -38,7 +38,7 @@ What Do Statisticians Actually Do In The Real World?
 author: Nathan Lally: Data Scientist @ New England Statistical Society & HSB (Munich Re)
 width: 1366
 height: 768
-date: 2018-11-08
+date: 2018-11-29
 autosize: true
 
 

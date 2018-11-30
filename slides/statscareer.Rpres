@@ -207,9 +207,9 @@ Statistics In Action
 library("changepoint")
 
 #### get data ####
-temp <- read.table("ftp://ftp.ncdc.noaa.gov/pub/data/noaaglobaltemp/operational/timeseries/aravg.ann.land.00N.30N.v4.0.1.201809.asc", header = FALSE)
-temp <- temp[,1:2]
-colnames(temp) <- c("year","anomaly")
+temp <- read.table("ftp://ftp.ncdc.noaa.gov/pub/data/noaaglobaltemp/operational/timeseries/aravg.ann.land.00N.30N.v4.0.1.201810.asc", header = FALSE)
+temp <- temp[,1:3]
+colnames(temp) <- c("year","anomaly","var")
 
 #### fit change point model ####
 cpmod <- cpt.meanvar(temp$anomaly,pen.value="BIC",method="BinSeg",Q=6,class=FALSE)
@@ -251,6 +251,7 @@ for(i in 1:ncol(titanic_train)){
 }
 
 #### fit model ####
+set.seed(353)
 fit <- ctree(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked,
                data=titanic_train)
 plot(fit, tp_args = list(text = "h"), gp = gpar(fontsize = 20))

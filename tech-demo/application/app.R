@@ -1,9 +1,31 @@
-#### load packages & data ####
+#### load packages ####
 library(shiny)
 library(tidyverse)
 library(rfCountData)
-load("/home/nathan/Documents/stats-projects/stats-career-talk/tech-demo/application/autodat.RData")
+# use the CASdatsets package to obtain auto claims data
+library(CASdatasets)
+
+#### load and prepare data ####
+data(freMPL1)
+df <- as_tibble(freMPL1)
+df <- df %>%
+  select(Exposure,ClaimInd,LicAge,VehAge,Gender,VehUsage,DrivAge,VehBody,VehMaxSpeed)
+rm(freMPL1)
 overallrate <- sum(df$ClaimInd)/sum(df$Exposure)
+# prep for random forest
+y <- df$ClaimInd
+exposure <- df$Exposure
+x <- df %>%
+  select(-c(Exposure,ClaimInd)) %>%
+  as.data.frame()
+
+#### fit model ####
+m0 <-  rfPoisson(y = y,
+                 offset = log(exposure),
+                 x = x,
+                 mtry = 3,
+                 nodesize = 2000,
+                 ntree = 300)
 
 #### shiny application ####
 library(shiny)

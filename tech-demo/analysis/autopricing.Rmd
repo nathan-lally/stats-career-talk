@@ -11,9 +11,10 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-library("knitr")
-library("tidyverse")
-library("rfCountData")
+library(knitr)
+library(tidyverse)
+library(rfCountData)
+library(CASdatasets)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -56,9 +57,6 @@ Why France in 2004? Because someone kindly made this data [publicly and freely a
 # Obtain & Manipulate Data
 
 ```{r}
-# use the CASdatsets package to obtain auto claims data
-library("CASdatasets", verbose = FALSE)
-
 # fetch claims and claims severity data, join them so we can model pure premium
 data(freMPL1)
 df <- as_tibble(freMPL1)
@@ -168,7 +166,7 @@ x <- df %>%
   select(-c(Exposure,ClaimInd)) %>%
   as.data.frame()
 # fit
-library(rfCountData)
+set.seed(972)
 tune.grid <- expand.grid(mtry=1:ncol(x), nodesize=c(500, 750, 1000, 2000, 3000, 5000), oob=NA)
 for(i in 1:nrow(tune.grid)){
   tune.grid$oob[i] <- mean(rfPoisson(y = y,
@@ -183,8 +181,6 @@ m0 <-  rfPoisson(y = y,
                  mtry = tuned.hypers$mtry,
                  nodesize = tuned.hypers$nodesize,
                  ntree = 300)
-
-save(list=c("df","x","m0"), file = "~/Documents/stats-projects/stats-career-talk/tech-demo/application/autodat.RData")
 ```
 
 ### Model Results
